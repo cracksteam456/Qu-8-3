@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Món Quà 8/3 Cho Bé</title>
+    <style>
+        :root {
+            --pink-bg: #2a0a18; /* Nền tối lãng mạn cho sao lấp lánh */
+            --cover-color: #d63031; /* Đỏ đô sang trọng cho bìa */
+            --page-color: #fffafa; /* Trắng ngà cho trang sách */
+            --gold: #f1c40f;
+            --text-color: #2d3436;
+        }
+
+        body {
+            margin: 0; padding: 0;
+            background: radial-gradient(circle at center, #4b1327 0%, var(--pink-bg) 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden; height: 100vh;
+            display: flex; justify-content: center; align-items: center;
+            perspective: 2000px; /* Không gian 3D chuẩn */
+        }
+
+        /* BẦU TRỜI SAO LONG LANH DI CHUYỂN */
+        .stars { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; }
+        .star { position: absolute; background: #fff; border-radius: 50%; box-shadow: 0 0 8px #fff; animation: floatUp linear infinite; }
+        @keyframes floatUp {
+            0% { transform: translateY(100vh) scale(0.2); opacity: 0; }
+            20% { opacity: 0.8; }
+            80% { opacity: 0.8; }
+            100% { transform: translateY(-10vh) scale(1.2); opacity: 0; }
+        }
+
+        /* ẢNH KỶ NIỆM TRÔI NỔI LƠ LỬNG (Không đổi) */
+        .floating-photo {
+            position: absolute; width: 130px; height: 130px;
+            border: 6px solid white; border-radius: 10px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.5);
+            z-index: 2; pointer-events: none; opacity: 0.7;
+            animation: float 20s ease-in-out infinite alternate;
+            object-fit: cover;
+        }
+        .p1 { top: 15%; left: 8%; animation-duration: 25s; }
+        .p2 { bottom: 15%; left: 12%; animation-duration: 22s; animation-delay: -5s; }
+        .p3 { top: 20%; right: 10%; animation-duration: 28s; animation-delay: -10s; }
+        .p4 { bottom: 20%; right: 8%; animation-duration: 24s; animation-delay: -15s; }
+
+        @keyframes float {
+            0% { transform: translate(0, 0) rotate(-5deg); }
+            50% { transform: translate(15px, -20px) rotate(5deg); }
+            100% { transform: translate(-10px, 15px) rotate(-3deg); }
+        }
+
+        /* ================= CẤU TRÚC SÁCH 3D CHUẨN ================= */
+        .book-wrapper {
+            position: relative; z-index: 10;
+            width: 400px; height: 550px;
+            /* Khi bìa mở, cuốn sách dịch sang phải để căn giữa màn hình */
+            transition: transform 1.5s cubic-bezier(0.645, 0.045, 0.355, 1);
+            transform-style: preserve-3d;
+        }
+        .book-wrapper.is-open { transform: translateX(200px); }
+
+        /* Trang sách bên phải (Cố định, chứa chữ) */
+        .page-right {
+            position: absolute; top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: var(--page-color);
+            border-radius: 8px 18px 18px 8px;
+            box-shadow: 10px 15px 35px rgba(0,0,0,0.5);
+            padding: 60px 35px 35px 35px; box-sizing: border-box;
+            overflow-y: auto; z-index: 1;
+        }
+        .page-right::-webkit-scrollbar { width: 6px; }
+        .page-right::-webkit-scrollbar-thumb { background: var(--cover-color); border-radius: 10px; }
+
+        .typing-text { font-size: 1.15rem; line-height: 1.8; color: var(--text-color); white-space: pre-wrap; font-weight: 500;}
+
+        /* Nút đóng sách ✖ */
+        .close-btn {
+            position: absolute; top: 15px; right: 15px;
+            background: #ffeaa7; color: #d63031;
+            border: none; padding: 8px 15px; border-radius: 20px;
+            font-weight: bold; cursor: pointer; transition: 0.3s;
+            z-index: 20; display: none; box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+        .close-btn:hover { background: #d63031; color: white; }
+
+        /* TỔ HỢP BÌA SÁCH (Lật 3D) */
+        .book-cover {
+            position: absolute; top: 0; left: 0;
+            width: 100%; height: 100%;
+            transform-origin: 0% 50%; /* Tâm xoay chuẩn xác ở cạnh trái */
+            transform-style: preserve-3d;
+            transition: transform 1.5s cubic-bezier(0.645, 0.045, 0.355, 1);
+            z-index: 5; cursor: pointer;
+        }
+        .book-cover.is-open { transform: rotateY(-180deg); cursor: default; }
+
+        /* Mặt ngoài bìa */
+        .cover-front {
+            position: absolute; top: 0; left: 0;
+            width: 100%; height: 100%;
+            backface-visibility: hidden;
+            background: linear-gradient(135deg, var(--cover-color), #a22323);
+            border-radius: 8px 18px 18px 8px;
+            border-left: 12px solid #7a1616; /* Gáy sách */
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            box-shadow: inset 4px 0 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        /* Viền trang trí mặt bìa */
+        .cover-front::before {
+            content: ''; position: absolute; top: 15px; left: 15px; right: 15px; bottom: 15px;
+            border: 2px dashed var(--gold); border-radius: 10px; opacity: 0.6;
+        }
+
+        /* Mặt trong bìa (Chứa ảnh) */
+        .cover-back {
+            position: absolute; top: 0; left: 0;
+            width: 100%; height: 100%;
+            backface-visibility: hidden;
+            transform: rotateY(180deg); /* Lật ngược lại để làm mặt trong */
+            background: var(--page-color);
+            /* Bán kính bo góc phải ngược lại so với mặt trước */
+            border-radius: 18px 8px 8px 18px; 
+            padding: 25px; box-sizing: border-box;
+            display: flex; align-items: center; justify-content: center;
+            border-right: 2px solid #ccc;
+        }
+        .cover-back img {
+            max-width: 100%; max-height: 100%; border-radius: 10px;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.1), 0 5px 15px rgba(0,0,0,0.2);
+            border: 5px solid #fff;
+        }
+
+        /* ================= VẼ HOA HỒNG BẰNG CSS/SVG TRÊN BÌA ================= */
+        .css-flower-container {
+            position: relative; width: 120px; height: 120px;
+            margin: 30px 0;
+            filter: drop-shadow(0 5px 15px rgba(0,0,0,0.4));
+            animation: pulse-flower 3s infinite alternate;
+        }
+        @keyframes pulse-flower { 0% { transform: scale(1); } 100% { transform: scale(1.05); filter: drop-shadow(0 5px 25px rgba(241, 196, 15, 0.6)); } }
+        
+        /* Mã SVG vẽ hoa hồng tinh tế */
+        .svg-rose { width: 100%; height: 100%; fill: none; stroke: var(--gold); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+        /* Typography Bìa */
+        .cover-title { font-size: 2.8rem; font-weight: bold; color: var(--gold); text-shadow: 0 2px 5px rgba(0,0,0,0.5); text-transform: uppercase; letter-spacing: 2px; margin-top: 10px;}
+        .cover-subtitle { font-size: 1.2rem; color: #fff; margin-top: 5px; opacity: 0.9; }
+        .click-hint { margin-top: 40px; font-size: 0.9rem; color: #fff; background: rgba(0,0,0,0.2); padding: 5px 15px; border-radius: 20px; animation: blink-text 2s infinite; }
+        @keyframes blink-text { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }
+
+    </style>
+</head>
+<body>
+
+    <audio id="bg-music" src="Quốc Thiên - Hoa Và Váy  Official Music Video - Quốc Thiên Official_1.mp3" loop></audio>
+
+    <div class="stars" id="stars-container"></div>
+
+    <img src="hoa.jpeg" class="floating-photo p1">
+    <img src="SKY_20260223_211338.jpg" class="floating-photo p2">
+    <img src="SKY_20260223_211342.jpg" class="floating-photo p3">
+    <img src="tim.jpeg" class="floating-photo p4">
+
+    <div class="book-wrapper" id="book-wrapper">
+        
+        <div class="page-right">
+            <button class="close-btn" id="closeBtn" onclick="closeBook()">✖ Đóng</button>
+            <div id="text-container" class="typing-text"></div>
+        </div>
+
+        <div class="book-cover" id="book-cover" onclick="openBook()">
+            <div class="cover-front">
+                <div class="cover-subtitle">Tặng bé Bắp của tôi</div>
+                <div class="cover-title">Ngày 8/3</div>
+                
+                <div class="css-flower-container">
+                    <svg viewBox="0 0 100 100" class="svg-rose">
+                        <path d="M50 80 C 50 80, 40 100, 50 100 C 60 100, 50 80, 50 80 Z" fill="#27ae60" stroke="none"/> <path d="M50 20 C 20 20, 10 50, 30 70 C 50 90, 70 70, 90 50 C 80 20, 50 20, 50 20 Z" fill="rgba(241,196,15,0.2)" /> <path d="M40 30 C 25 40, 35 65, 50 75 C 65 65, 75 40, 60 30 C 50 25, 40 30, 40 30 Z" /> <path d="M45 40 C 35 50, 40 60, 50 65 C 60 60, 65 50, 55 40 C 50 35, 45 40, 45 40 Z" /> <path d="M48 48 C 45 52, 48 55, 50 58 C 52 55, 55 52, 52 48 C 50 46, 48 48, 48 48 Z" /> </svg>
+                </div>
+
+                <div class="click-hint">Chạm vào để mở quà</div>
+            </div>
+
+            <div class="cover-back">
+                <img src="sky.jpg" alt="Kỷ niệm">
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // Tạo sao
+        const starContainer = document.getElementById('stars-container');
+        for(let i=0; i<80; i++){
+            let star = document.createElement('div');
+            star.classList.add('star');
+            star.style.left = Math.random() * 100 + 'vw';
+            star.style.width = Math.random() * 3 + 1 + 'px';
+            star.style.height = star.style.width;
+            star.style.animationDuration = Math.random() * 5 + 3 + 's';
+            star.style.animationDelay = Math.random() * 5 + 's';
+            starContainer.appendChild(star);
+        }
+
+        // Nội dung thư
+        const letterContent = `Tháng Ba, khi cả hai đều đang mải miết với những mục tiêu riêng, tôi mới thấy trân trọng những phút giây tĩnh lặng mình có cùng nhau.
+
+Giữa những ngày tháng áp lực của tuổi trưởng thành, cảm ơn Bắp vì đã kiên nhẫn và đồng hành cùng tôi từ lúc bắt đầu tập chơi cho tới hiện tại. Với tôi, sự hiện diện của Bắp giống như một khoảng lặng bình yên, giúp mọi thứ mệt mỏi ngoài kia đều dừng lại .
+
+8/3 này, chúc Bắp luôn giữ được sự an nhiên và nụ cười ấy, ngày càng xinh đẹp. Mong Bắp hãy cứ là chính mình, không cần phải quá gồng mình trước những kỳ vọng, cũng không cần phải vội vã với thế giới ngoài kia. Đoạn đường phía trước dẫu có gập ghềnh, tôi chỉ hy vọng mình có thể tiếp tục đồng hành cùng Bắp, tôi vẫn sẽ luôn ở bên Bắp, cùng Bắp đi hết chân trời góc biển .
+
+Vì tôi ...
+
+YÊU BẮP NHIỀU LẮM!`;
+
+        let index = 0;
+        let typingTimer;
+        let isBookOpen = false;
+
+        function openBook() {
+            if (isBookOpen) return;
+            isBookOpen = true;
+
+            document.getElementById('bg-music').play().catch(e => console.log("Cần tương tác"));
+
+            // Thêm class để kích hoạt CSS lật sách và dịch chuyển
+            document.getElementById('book-wrapper').classList.add('is-open');
+            document.getElementById('book-cover').classList.add('is-open');
+
+            // Chờ hiệu ứng lật sách kết thúc (1.5s) rồi mới chạy chữ
+            setTimeout(() => {
+                document.getElementById('closeBtn').style.display = 'block';
+                document.getElementById("text-container").innerHTML = "";
+                index = 0; 
+                typeWriter();
+            }, 1500);
+        }
+
+        function typeWriter() {
+            if (index < letterContent.length) {
+                document.getElementById("text-container").innerHTML += letterContent.charAt(index);
+                index++;
+                typingTimer = setTimeout(typeWriter, 45); // Tốc độ gõ chữ
+            }
+        }
+
+        function closeBook() {
+            if (!isBookOpen) return;
+            isBookOpen = false;
+
+            // Dọn dẹp hiệu ứng chữ ngay lập tức
+            clearTimeout(typingTimer);
+            document.getElementById('closeBtn').style.display = 'none';
+
+            // Xóa class để sách gập lại và lùi về giữa
+            document.getElementById('book-wrapper').classList.remove('is-open');
+            document.getElementById('book-cover').classList.remove('is-open');
+        }
+    </script>
+</body>
+</html>
